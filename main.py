@@ -80,3 +80,6 @@ def delete_student(roll_no:int):
 
     return {"message":"Student deleted"}
 
+@app.get('/some-api')
+def some_api() -> dict
+    return {"mesage":"som api"}
