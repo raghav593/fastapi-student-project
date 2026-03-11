@@ -2,33 +2,34 @@ from fastapi import APIRouter,Depends
 from database import cursor, conn
 from schemas import Student
 from fastapi import HTTPException
+from .auth import verify_token
 
 router = APIRouter()
 
-def check_login(username:str, password:str):
+# def check_login(username:str, password:str):
 
-    query = "SELECT * FROM users WHERE username=%s AND password=%s"
-    cursor.execute(query,(username,password))
+#     query = "SELECT * FROM users WHERE username=%s AND password=%s"
+#     cursor.execute(query,(username,password))
 
-    user = cursor.fetchone()
+#     user = cursor.fetchone()
 
-    if not user:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid username or password"
-        )
-    return user
+#     if not user:
+#         raise HTTPException(
+#             status_code=401,
+#             detail="Invalid username or password"
+#         )
+#     return user
 
 
 @router.get('/student')
-def show_all(user=Depends(check_login)):
+def show_all(user=Depends(verify_token)):
     query = "select * from student"
     cursor.execute(query)
     return cursor.fetchall()
 
 
 @router.get('/student/grade')
-def get_students(grade:int,user=Depends(check_login)):
+def get_students(grade:int,user=Depends(verify_token)):
 
     query = "select * from student where grade=%s"
     cursor.execute(query,(grade,))
@@ -36,7 +37,7 @@ def get_students(grade:int,user=Depends(check_login)):
 
 
 @router.get('/student/{roll_no}')
-def show_one(roll_no:int,user=Depends(check_login)):
+def show_one(roll_no:int,user=Depends(verify_token)):
 
     query = "select * from student where roll_number=%s"
     cursor.execute(query,(roll_no,))
@@ -44,7 +45,7 @@ def show_one(roll_no:int,user=Depends(check_login)):
 
 
 @router.post('/add-student')
-def add_student(student:Student,user=Depends(check_login)):
+def add_student(student:Student,user=Depends(verify_token)):
 
     query = "INSERT INTO student (roll_number,name,grade) VALUES (%s,%s,%s)"
     cursor.execute(query,(student.roll_no,student.name,student.grade))
@@ -54,7 +55,7 @@ def add_student(student:Student,user=Depends(check_login)):
 
 
 @router.put("/update-student/{roll_no}")
-def update_student(roll_no:int,student:Student,user=Depends(check_login)):
+def update_student(roll_no:int,student:Student,user=Depends(verify_token)):
 
     query = "UPDATE student SET name=%s, grade=%s WHERE roll_number=%s"
     cursor.execute(query,(student.name,student.grade,roll_no))
@@ -64,7 +65,7 @@ def update_student(roll_no:int,student:Student,user=Depends(check_login)):
 
 
 @router.delete("/delete-student/{roll_no}")
-def delete_student(roll_no:int,user=Depends(check_login)):
+def delete_student(roll_no:int,user=Depends(verify_token)):
 
     query = "DELETE FROM student WHERE roll_number=%s"
     cursor.execute(query,(roll_no,))

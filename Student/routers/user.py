@@ -1,7 +1,9 @@
 from fastapi import APIRouter,Depends
 from database import cursor, conn
 from schemas import User
-from .student import check_login
+# from .student import check_login
+from .auth import create_access_token
+
 
 router = APIRouter()
 
@@ -20,15 +22,17 @@ def login(user:User):
 
     query = "SELECT * FROM users WHERE username=%s AND password=%s"
     cursor.execute(query,(user.username,user.password))
+    user = cursor.fetchone()
 
-    data = cursor.fetchone()
-
-    if data:
-        return {"message":"Login successful"}
-    else:
+    if not user:
         return {"message":"Invalid username or password"}
+
+    token = create_access_token({"sub":user[0]})
+    print(token)
+
+    return {"access_token":token,"token_type":"bearer"}
     
 
-@router.get('/profile')
-def user_profile(user=Depends(check_login)):
-    return user
+# @router.get('/profile')
+# def user_profile(user=Depends(check_login)):
+#     return user
